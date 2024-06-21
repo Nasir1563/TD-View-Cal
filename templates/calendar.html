@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar</title>
+    <!-- FullCalendar CSS -->
+    <link href="{{ url_for('static', filename='css/fullcalendar/main.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/fullcalendar/daygrid.min.css') }}" rel="stylesheet">
+    <!-- FullCalendar JS -->
+    <script src="{{ url_for('static', filename='js/fullcalendar/main.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/fullcalendar/locales-all.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/fullcalendar/daygrid.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <nav>
+        <a href="/">Dashboard</a> | <a href="/calendar">Calendar</a>
+    </nav>
+    <h1>Calendar</h1>
+    <div id="calendar"></div>
+    <div id="tradeDetails">
+        <h2>Trade Summary</h2>
+        <ul id="tradeList"></ul>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var tradeListEl = document.getElementById('tradeList');
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: '/api/trades',
+                eventClick: function(info) {
+                    var eventObj = info.event;
+
+                    if (eventObj) {
+                        var props = eventObj.extendedProps;
+                        var tradesInfo = props.trades.map(trade => `
+                            <li>
+                                <strong>Symbol:</strong> ${trade.symbol} <br>
+                                <strong>Type:</strong> ${trade.type} <br>
+                                <strong>Volume:</strong> ${trade.volume} <br>
+                                <strong>Profit:</strong> ${trade.profit} <br>
+                                <strong>Start Time:</strong> ${trade.time} <br>
+                                <strong>Close Time:</strong> ${trade.close_time} <br>
+                                <strong>Duration:</strong> ${trade.trade_durations ? trade.trade_durations.toFixed(2) : 0} minutes
+                            </li>
+                        `).join('');
+
+                        var content = `
+                            <li>
+                                <strong>Total Trades:</strong> ${props.count} <br>
+                                <strong>Total Profit/Loss:</strong> ${props.total_profit_loss} <br>
+                                <strong>Total Volume:</strong> ${props.total_volume} <br>
+                                <strong>Average Trade Duration:</strong> ${props.trade_durations.length ? (props.trade_durations.reduce((a, b) => a + b) / props.trade_durations.length).toFixed(2) : 0} minutes <br>
+                                <strong>Wins:</strong> ${props.win_count} <br>
+                                <strong>Losses:</strong> ${props.loss_count}
+                            </li>
+                            <ul>${tradesInfo}</ul>
+                        `;
+                        tradeListEl.innerHTML = content;
+                    }
+                }
+            });
+
+            calendar.render();
+        });
+    </script>
+</body>
+</html>
