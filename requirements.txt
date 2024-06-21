@@ -4,3 +4,4 @@ supabase==2.5.1
 numpy
 Werkzeug==2.0.1
 plotly==5.10.0
+pandas
